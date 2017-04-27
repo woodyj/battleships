@@ -4,6 +4,7 @@ namespace App\Classes;
 
 use App\Classes\Vessel;
 use \Exception;
+use \stdClass;
 
 final class Grid
 {
@@ -19,6 +20,7 @@ final class Grid
     private $coordinateStatuses = array();
     private $shots = array();
     private $vessels = array();
+    private $showVessels = false;
 
     public function __construct()
     {
@@ -29,9 +31,31 @@ final class Grid
     {
         for ($x=1; $x<=static::COLS; $x++) {
             for ($y=1; $y<=static::ROWS; $y++) {
-                $this->coordinateStatuses[$this->generateCoordinateValuePair($x, $y)] = static::COORD_STATUS_NO_SHOT;
+                $coordinateStatus = new stdClass;
+                $coordinateStatus->status = static::COORD_STATUS_NO_SHOT;
+                $coordinateStatus->x = $x;
+                $coordinateStatus->y = $y;
+                $coordinateStatus->hasVessel = false;
+
+                $this->coordinateStatuses[$this->generateCoordinateValuePair($x, $y)] = $coordinateStatus;
             }
         }
+    }
+
+    /**
+     * Toggle showVessels
+     *
+     * Show/hide vessel location in grid data
+     *
+     */
+    public function toggleShowVessels(): void
+    {
+        $this->showVessels = !$this->showVessels;
+    }
+
+    public function getShowVessels(): bool
+    {
+        return $this->showVessels;
     }
 
     /**
@@ -44,8 +68,12 @@ final class Grid
 
         // Add on the damage from each ship - best to keep it this way so there is a single source of truth for battle damage.
         foreach ($this->getVessels() as $vessel) {
-            foreach ($vessel->getDamage() as $coord) {
-                $coordinateStatuses[$coord] = static::COORD_STATUS_HIT;
+            foreach ($vessel->getGridCoordinates() as $coordinate) {
+                $coordinateStatuses[$coordinate]->hasVessel = true;
+            }
+
+            foreach ($vessel->getDamage() as $coordinate) {
+                $coordinateStatuses[$coordinate]->status = static::COORD_STATUS_HIT;
             }
         }
 
@@ -54,7 +82,7 @@ final class Grid
 
     public function setGridCoordinateStatus(string $coordinate, string $status): void
     {
-        $this->coordinateStatuses[$coordinate] = $status;
+        $this->coordinateStatuses[$coordinate]->status = $status;
     }
 
     /**
@@ -129,7 +157,7 @@ final class Grid
      *
      *
      */
-    private function calculateMaxStartingPosition(Vessel $vessel, int $orientation)
+    private function calculateMaxStartingPosition(Vessel $vessel, int $orientation): int
     {
         switch ($orientation) {
             case static::ORIENTATION_VERTICAL:
@@ -210,8 +238,7 @@ final class Grid
      */
     private function generateCoordinateValuePair(int $x, int $y): string
     {
-        $pair = $x . ':' . $y;
-        return $pair;
+        return $x . ':' . $y;
     }
 
     /**
@@ -228,7 +255,7 @@ final class Grid
 
         preg_match('/^([[:alpha:]])([[:digit:]]{1,2})$/', $alphaCoordinate, $matches);
 
-        $x = strpos('abcdefghijklmnopqrstuvwxyz', $matches[1]) + 1;
+        $x = strpos(implode(range('a', 'z')), $matches[1]) + 1;
         $y = (int)$matches[2];
 
         $coordinate = $this->generateCoordinateValuePair($x, $y);
@@ -241,17 +268,12 @@ final class Grid
      *
      * Registers a shot either missed or hit, required the grid coordinate is still free.
      *
+     * @TODO - refactor this entire method! Needs to return something safer than an arbitrary string!
      */
     public function takeShot(string $coordinate)
     {
-        // $coord = $this->generateCoordinateValuePair($x, $y);
-
-        // var_dump($this->getCoordinateStatuses()[$coordinate]);
-        // var_dump(static::COORD_STATUS_NO_SHOT);
-        // exit;
-
         // ignore this shot if this coordinate already fired on
-        if ($this->getCoordinateStatuses()[$coordinate] !== static::COORD_STATUS_NO_SHOT) {
+        if ($this->getCoordinateStatuses()[$coordinate]->status !== static::COORD_STATUS_NO_SHOT) {
             return 'You already shot this one.';
             // @TODO - throw a custom exception here instead!
         }
@@ -272,5 +294,24 @@ final class Grid
         $this->setGridCoordinateStatus($coordinate, static::COORD_STATUS_MISS);
 
         return 'Miss!';
+    }
+
+    /**
+     * Count shots.
+     *
+     * Return number of shots fired on this grid.
+     *
+     */
+    public function countShots(): int
+    {
+        $i=0;
+
+        foreach ($this->getCoordinateStatuses() as $key => $coordinateStatus) {
+            if ($coordinateStatus->status !== static::COORD_STATUS_NO_SHOT) {
+                $i++;
+            }
+        }
+
+        return $i;
     }
 }

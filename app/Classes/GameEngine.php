@@ -6,7 +6,7 @@ use App\Classes\Grid;
 use App\Classes\VesselFactory;
 use \Session;
 
-class GameEngine
+final class GameEngine
 {
     const SESSION_VAR_GRID = 'grid';
 
@@ -35,19 +35,7 @@ class GameEngine
      *
      * @returns 
      */
-    public function loadVessels()
-    {
-        return Session::get(static::SESSION_VAR_GRID)->getVessels();
-    }
-
-    /**
-     * .
-     *
-     * .
-     *
-     * @returns 
-     */
-    public function saveGrid(Grid $grid): void
+    private function saveGrid(Grid $grid): void
     {
         Session::put(static::SESSION_VAR_GRID, $grid);
     }
@@ -56,18 +44,6 @@ class GameEngine
     {
         return Session::get(static::SESSION_VAR_GRID);
     }
-
-    /**
-     * .
-     *
-     * .
-     *
-     * @returns 
-     */
-    // public static function getGridData(): 
-    // {
-        
-    // }
 
     /**
      * Check to see if a game has already been started.
@@ -82,14 +58,67 @@ class GameEngine
     }
 
     /**
+    * Take shot.
     *
+    * Fire on a given alphanumeric grid coordinate (e.g. a1, j10).
+    *
+    * @param string $alphaCoordinate The alphanumeric grid coordinate to fire upon.
+    * @return string $damageReport
     *
     */
     public function takeShot(string $alphaCoordinate)
     {
         $grid = $this->getGrid();
-        $gridCoord = $grid->translateAlphaGridCoordinate($alphaCoordinate);
-        $damageReport = $grid->takeShot($gridCoord);
+        $gridCoordinate = $grid->translateAlphaGridCoordinate($alphaCoordinate);
+        $damageReport = $grid->takeShot($gridCoordinate);
         return $damageReport;
+    }
+
+    /**
+     * Count shots.
+     *
+     * Returns number shots fired on the grid.
+     *
+     * @return int Total number of shots fired.
+     *
+     */
+    public function countShots(): int
+    {
+        return $this->getGrid()->countShots();
+    }
+
+    /**
+     * Game over?
+     *
+     * Returns true if all vessels sunk.
+     *
+     * @return bool $gameOver Return true if all vessels sunk, false if not.
+     */
+    public function gameOver(): bool
+    {
+        $grid = $this->getGrid();
+        $vessels = $grid->getVessels();
+
+        foreach ($vessels as $vessel) {
+            if ( ! $vessel->sunk()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     *
+     *
+     */
+    public function toggleShowVessels(): void
+    {
+        $grid = $this->getGrid();
+        $grid->toggleShowVessels();
+
+        var_dump($grid->getShowVessels());
+
+        $this->saveGrid($grid);
     }
 }
