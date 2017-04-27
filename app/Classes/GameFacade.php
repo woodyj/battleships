@@ -7,7 +7,7 @@ use App\Classes\VesselFactory;
 use \Session;
 use \Exception;
 
-final class GameEngine
+final class GameFacade
 {
     const SESSION_VAR_GRID = 'grid';
 
@@ -16,9 +16,9 @@ final class GameEngine
      *
      * Drops all session data and regenerates the grid.
      *
-     * @returns void
+     * @return void
      */
-    public function reset(): void
+    public static function reset(): void
     {
         $grid = new Grid();
 
@@ -26,24 +26,31 @@ final class GameEngine
         $grid->placeVessel(VesselFactory::make('Battleship'));
         $grid->placeVessel(VesselFactory::make('Destroyer'));
         
-        $this->saveGrid($grid);
+        self::saveGrid($grid);
     }
 
     /**
-     * .
+     * Save Grid
      *
-     * .
+     * Create/update the grid object stored in the current session.
      *
-     * @returns 
+     * @return void
      */
-    private function saveGrid(Grid $grid): void
+    private static function saveGrid(Grid $grid): void
     {
-        Session::put(static::SESSION_VAR_GRID, $grid);
+        Session::put(self::SESSION_VAR_GRID, $grid);
     }
 
-    public function getGrid(): Grid
+    /**
+     * Get Grid
+     *
+     * Fetch and return the grid object stored in the current session.
+     *
+     * @return void
+     */
+    public static function getGrid(): Grid
     {
-        return Session::get(static::SESSION_VAR_GRID);
+        return Session::get(self::SESSION_VAR_GRID);
     }
 
     /**
@@ -53,9 +60,9 @@ final class GameEngine
      *
      * @return bool
      */
-    public function inProgress(): bool
+    public static function inProgress(): bool
     {
-        return (bool) Session::get(static::SESSION_VAR_GRID);
+        return (bool) Session::get(self::SESSION_VAR_GRID);
     }
 
     /**
@@ -67,9 +74,9 @@ final class GameEngine
     * @return string $damageReport
     *
     */
-    public function takeShot(string $alphaCoordinate)
+    public static function takeShot(string $alphaCoordinate)
     {
-        $grid = $this->getGrid();
+        $grid = self::getGrid();
         $gridCoordinate = $grid->translateAlphaGridCoordinate($alphaCoordinate);
         $damageReport = $grid->takeShot($gridCoordinate);
         return $damageReport;
@@ -83,21 +90,21 @@ final class GameEngine
      * @return int Total number of shots fired.
      *
      */
-    public function countShots(): int
+    public static function countShots(): int
     {
-        return $this->getGrid()->countShots();
+        return self::getGrid()->countShots();
     }
 
     /**
-     * Game over?
+     * Over
      *
-     * Returns true if all vessels sunk.
+     * Check if it's 'game over' yet.
      *
-     * @return bool $gameOver Return true if all vessels sunk, false if not.
+     * @return bool Return true if all vessels sunk, false if not.
      */
-    public function gameOver(): bool
+    public static function over(): bool
     {
-        $grid = $this->getGrid();
+        $grid = self::getGrid();
         $vessels = $grid->getVessels();
 
         foreach ($vessels as $vessel) {
@@ -110,16 +117,16 @@ final class GameEngine
     }
 
     /**
+     * Toggle show Vessels
      *
+     * Turn vessel visbility on/off in the grid object.
      *
+     * @return void
      */
-    public function toggleShowVessels(): void
+    public static function toggleShowVessels(): void
     {
-        $grid = $this->getGrid();
+        $grid = self::getGrid();
         $grid->toggleShowVessels();
-
-        var_dump($grid->getShowVessels());
-
-        $this->saveGrid($grid);
+        self::saveGrid($grid);
     }
 }

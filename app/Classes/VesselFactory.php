@@ -14,7 +14,7 @@ class VesselFactory
      * Instantiate and return a new vessel object, based on the specified vessel type/class.
      *
      * @param string $vesselType
-     * @returns Vessel
+     * @return Vessel
      */
     public static function make(string $vesselType): Vessel
     {
