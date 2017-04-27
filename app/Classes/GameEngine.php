@@ -5,6 +5,7 @@ namespace App\Classes;
 use App\Classes\Grid;
 use App\Classes\VesselFactory;
 use \Session;
+use \Exception;
 
 final class GameEngine
 {
