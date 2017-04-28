@@ -3,7 +3,9 @@
 namespace App\Classes;
 
 use App\Classes\Grid;
+use App\Classes\GridCoordinate;
 use App\Classes\VesselFactory;
+use App\Classes\GridCoordinateBuilder;
 use \Session;
 use \Exception;
 
@@ -68,18 +70,26 @@ final class GameFacade
     /**
     * Take shot.
     *
-    * Fire on a given alphanumeric grid coordinate (e.g. a1, j10).
+    * Fire on a given X,Y coordinate.
     *
-    * @param string $alphaCoordinate The alphanumeric grid coordinate to fire upon.
+    * @param int $x
+    * @param int $y
     * @return string $damageReport
     *
     */
-    public static function takeShot(string $alphaCoordinate)
+    public static function takeShot(int $x, int $y)
     {
         $grid = self::getGrid();
-        $gridCoordinate = $grid->translateAlphaGridCoordinate($alphaCoordinate);
-        $damageReport = $grid->takeShot($gridCoordinate);
-        return $damageReport;
+        $gridCoordinateBuilder = new GridCoordinateBuilder($x, $y);
+        $gridCoordinate = $gridCoordinateBuilder->build();
+
+        try {
+            $damageReport = $grid->takeShot($gridCoordinate);
+        } catch (Exception $e) {
+            return $e->getMessage();
+        }
+
+        return '';
     }
 
     /**
@@ -92,7 +102,7 @@ final class GameFacade
      */
     public static function countShots(): int
     {
-        return self::getGrid()->countShots();
+        return self::getGrid()->getShotsFired();
     }
 
     /**
@@ -105,9 +115,14 @@ final class GameFacade
     public static function over(): bool
     {
         $grid = self::getGrid();
-        $vessels = $grid->getVessels();
+        $vesselCollection = $grid->getVesselCollection();
 
-        foreach ($vessels as $vessel) {
+        /**
+         * @todo - need to use an Iterator here.
+         */
+        foreach ($vesselCollection->getKeys() as $key) {
+            $vessel = $vesselCollection->getItem($key);
+
             if ( ! $vessel->sunk()) {
                 return false;
             }

@@ -16,8 +16,6 @@
                 </tr>
             </thead>
             @php
-                $coordinateStatuses = $grid->getCoordinateStatuses();
-
                 for ($row=1; $row<=10; $row++) {
                     print "<tr>";
 
@@ -27,10 +25,9 @@
                             continue;
                         }
 
-                        $key = $col . ':' . $row;
-                        $coordinateStatus = $coordinateStatuses[$key];
-                        $highlightClass = $grid->getShowVessels() && $coordinateStatus->hasVessel ? 'highlight' : '';
-                        print "<td class=\"{$highlightClass}\">" . $coordinateStatus->status . "</td>";
+                        $gridStatus = $gridStatuses[$col][$row];
+                        $highlight = $gridStatus['highlight'] ? 'highlight' : '';
+                        print "<td class=\"{$highlight}\">" . $gridStatus['status'] . "</td>";
                     }
 
                     print "</tr>";
@@ -38,6 +35,7 @@
             @endphp
         </table>
     </div>
+    <div>{{ $damageReport }}</div>
     <div>
         <form action="/command" method="post">
             {{ csrf_field() }}

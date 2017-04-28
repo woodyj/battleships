@@ -4,28 +4,30 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Classes\GameFacade as Game;
+use App\Classes\GridAsNumericArrayStrategy;
+use App\Classes\GridCoordinate;
 
 class GameController extends Controller
 {
-    public function home()
+    public function home(string $damageReport = '')
     {
         if ( ! Game::inProgress()) {
-            $game->reset();
+            Game::reset();
         }
 
         if (Game::over()) {
             return redirect()->route('gameOver');
         }
 
-        // @TODO - refactor how grid data is passed to and rendered on the front end (make use of a Strategy pattern on the grid object, for example).
-        return view('home')->with('grid', Game::getGrid());
+        $gridStatuses = GridAsNumericArrayStrategy::get(Game::getGrid());
+        return view('home')->with('gridStatuses', $gridStatuses)->with('damageReport', $damageReport);
     }
 
     public function gameOver()
     {
         /**
          * Redirect back to home page if game is still in play (prevents user dirctly accessing the gamover page).
-         * @TODO - using a custom middleware to intercept this automatically might be nice, although would be harder to spot for maintenance teams.
+         * @todo - using a custom middleware to intercept this automatically might be nice, although would be harder to spot for maintenance teams.
          */
         if ( ! Game::over()) {
             return redirect()->route('home');
@@ -40,17 +42,28 @@ class GameController extends Controller
         return redirect()->route('home');
     }
 
+    /**
+     * @todo - refactor to use custom Validator classes (or at least base the regular expression on dynamic grid dimensions).
+     */
     public function command(Request $request)
     {
         $command = $request->input('command');
+        $damageReport = '';
 
         if (strtolower(trim($command)) === 'show') {
             Game::toggleShowVessels();
         }
 
-        // @TODO - refactor this!
+        /**
+         * @todo - refactor this!
+        */
         if (preg_match('/^[a-j]{1}([1-9]{1}|10)$/i', $command)) {
-            Game::takeShot($command);
+            list($x, $y) = explode(':', GridCoordinate::translateAlphaGridCoordinate($command));
+            $damageReport = Game::takeShot($x, $y);
+            
+            if ($damageReport) {
+                return redirect()->route('damage', ['damage' => $damageReport]);
+            }
         }
 
         return redirect()->route('home');
