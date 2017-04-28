@@ -1,51 +1,41 @@
-<p align="center"><img src="https://laravel.com/assets/img/components/logo-laravel.svg"></p>
+# Battleships
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/d/total.svg" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/v/stable.svg" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/license.svg" alt="License"></a>
-</p>
+## Installation
+Follow these steps to run battleships app in your local environment. These instructions assume you're using a Linux derived OS.  Instructions for Windows are not currently included.
 
-## About Laravel
+### System Requirements (Host)
+You must install these dependencies before the VM can start:
+  - [Vagrant](https://www.vagrantup.com/downloads.html)
+  - [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable, creative experience to be truly fulfilling. Laravel attempts to take the pain out of development by easing common tasks used in the majority of web projects, such as:
+### Configure Homestead
+You will need to update some configuration options before you can start the Vagrant VM.
+  - Open the Homestead.yaml file.
+  - If necessary change `ip: 192.168.10.10` to a vacant local IP address.
+  - Change `home/jim/Code/battleships` to your own local project root.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Update local hosts file
+Add the following entry into your local hosts file `/etc/hosts`:
+  - `192.168.10.10 battleships.app` (If you changed the IP in the previous steps, remember to use that IP here instead)
 
-Laravel is accessible, yet powerful, providing tools needed for large, robust applications. A superb combination of simplicity, elegance, and innovation give you tools you need to build any application with which you are tasked.
+### Start Vagrant VM
+  - In the root directory of this project, run `vagrant up`
 
-## Learning Laravel
+### Load the project
+In your browser, visit: `http://battleships.app`
 
-Laravel has the most extensive and thorough documentation and video tutorial library of any modern web application framework. The [Laravel documentation](https://laravel.com/docs) is thorough, complete, and makes it a breeze to get started learning the framework.
-
-If you're not in the mood to read, [Laracasts](https://laracasts.com) contains over 900 video tutorials on a range of topics including Laravel, modern PHP, unit testing, JavaScript, and more. Boost the skill level of yourself and your entire team by digging into our comprehensive video library.
-
-## Laravel Sponsors
-
-We would like to extend our thanks to the following sponsors for helping fund on-going Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](http://patreon.com/taylorotwell):
-
-- **[Vehikl](http://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[British Software Development](https://www.britishsoftware.co)**
-- **[Styde](https://styde.net)**
-- **[Codecourse](https://www.codecourse.com)**
-- [Fragrantica](https://www.fragrantica.com)
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](http://laravel.com/docs/contributions).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell at taylor@laravel.com. All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT).
+## Groveling, sniveling excuses
+### What I should have done
+  - TDD!
+  - Focused on quality, rather than trying to be clever with myriad design patterns in a vain bid to impress Mr Ward!
+  - Thought more about the effort required to implement my architectural decisions vs sacrificing best practice.
+  - Not hacked the frontend code like I have (FFS, don't even look at it PLEASE).
+  
+### Things to improve on
+  - Introduce Iterators to process various Collections (marked with @todo annotation throughout).
+  - Strict PHP7 standards - yes, there are violations at the present time.  A very small number of method arguments are not type hinted, and a very small number of methods have no return type hinting. Sometimes because I wanted the flexibility of having multiple types per argument or return, although I'd perfer to go back and reverse that decision.
+  - Unit tests, functional tests, maybe even some browser testing...
+  - Demonstrate use of Traits and Interfaces, although I so far haven't felt the need to use them in this project.
+  - GameFacade???  Not sure Facade is the right convention here!
+  - Maybe use an event stream for posting hit messages - a bit fanciful for this short test though, perhaps.
+  - See other @todo annotations.
